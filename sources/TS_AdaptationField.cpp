@@ -1,11 +1,11 @@
-#include "../headers/tsAdaptationField.h"
-#include "../headers/tsTransportStream.h"
+#include "../headers/TS_AdaptationField.h"
+#include "../headers/TS_TransportStream.h"
 
-tsAdaptationField::tsAdaptationField() {}
+TS_AdaptationField::TS_AdaptationField() {}
 
-uint8_t tsAdaptationField::getAdaptationFieldLength() const { return adaptation_field_length.to_ulong(); }
+uint8_t TS_AdaptationField::getAdaptationFieldLength() const { return adaptation_field_length.to_ulong(); }
 
-void tsAdaptationField::Reset() {
+void TS_AdaptationField::Reset() {
     adaptation_field_length.reset();
     random_access_indicator.reset();
     elementary_stream_priority_indicator.reset();
@@ -42,70 +42,70 @@ void tsAdaptationField::Reset() {
     stuffing_count = 0;
 }
 
-void tsAdaptationField::Parse(const uint8_t* input) {
+void TS_AdaptationField::Parse(const uint8_t* input) {
     //this->Reset();
-    std::stringstream bit_stream(xTS::getBitStream(input, 5, adaptation_field_length.to_ulong()));
+    std::stringstream ss(xTS::getBitStream(input, 5, adaptation_field_length.to_ulong()));
 
     adaptation_field_length = input[4];
     int used_bytes = 1;
 
     if(adaptation_field_length.to_ulong() > 0){
-        bit_stream >> discontinuity_indicator;
-        bit_stream >> random_access_indicator;
-        bit_stream >> elementary_stream_priority_indicator;
-        bit_stream >> PCR_flag;
-        bit_stream >> OPCR_flag;
-        bit_stream >> splicing_point_flag;
-        bit_stream >> transport_private_data_flag;
-        bit_stream >> adaptation_field_extension_flag;
+        ss >> discontinuity_indicator;
+        ss >> random_access_indicator;
+        ss >> elementary_stream_priority_indicator;
+        ss >> PCR_flag;
+        ss >> OPCR_flag;
+        ss >> splicing_point_flag;
+        ss >> transport_private_data_flag;
+        ss >> adaptation_field_extension_flag;
         if(PCR_flag == '1'){
             used_bytes += 6;
-            bit_stream >> PCR_base;
-            bit_stream >> PCR_reserved;
-            bit_stream >> PCR_extension;
+            ss >> PCR_base;
+            ss >> PCR_reserved;
+            ss >> PCR_extension;
         }
         if(OPCR_flag == '1'){
             used_bytes += 6;
-            bit_stream >> OPCR_base;
-            bit_stream >> OPCR_reserved;
-            bit_stream >> OPCR_extension;
+            ss >> OPCR_base;
+            ss >> OPCR_reserved;
+            ss >> OPCR_extension;
         }
         if(splicing_point_flag == '1'){
             used_bytes++;
-            bit_stream >> splice_countdown;
+            ss >> splice_countdown;
         }
         if(transport_private_data_flag == '1'){
-            bit_stream >> transport_private_data_length;
+            ss >> transport_private_data_length;
             private_data_byte = new uint8_t[transport_private_data_length.to_ulong()];
-            bit_stream >> private_data_byte;
+            ss >> private_data_byte;
             used_bytes += transport_private_data_length.to_ulong();
         }
         if(adaptation_field_extension_flag == '1'){
-            bit_stream >> adaptation_field_extension_length;
-            bit_stream >> ltw_flag;
-            bit_stream >> piecewise_rate_flag;
-            bit_stream >> seamless_splice_flag;
-            bit_stream >> reserved_extension_1;
+            ss >> adaptation_field_extension_length;
+            ss >> ltw_flag;
+            ss >> piecewise_rate_flag;
+            ss >> seamless_splice_flag;
+            ss >> reserved_extension_1;
             used_bytes += adaptation_field_extension_length.to_ulong();
             if(ltw_flag == '1'){
                 used_bytes += 2;
-                bit_stream >> ltw_valid_flag;
-                bit_stream >> ltw_offset;
+                ss >> ltw_valid_flag;
+                ss >> ltw_offset;
             }
             if(piecewise_rate_flag == '1'){
                 used_bytes += 3;
-                bit_stream >> reserved_extension_2;
-                bit_stream >> piecewise_rate;
+                ss >> reserved_extension_2;
+                ss >> piecewise_rate;
             }
             if(seamless_splice_flag == '1'){
                 used_bytes += 5;
-                bit_stream >> splice_type;
-                bit_stream >> DTS_next_AU_32_30;
-                bit_stream >> marker_bit_30;
-                bit_stream >> DTS_next_AU_29_15;
-                bit_stream >> marker_bit_15;
-                bit_stream >> DTS_next_AU_14_0;
-                bit_stream >> marker_bit;
+                ss >> splice_type;
+                ss >> DTS_next_AU_32_30;
+                ss >> marker_bit_30;
+                ss >> DTS_next_AU_29_15;
+                ss >> marker_bit_15;
+                ss >> DTS_next_AU_14_0;
+                ss >> marker_bit;
             }
         }
         stuffing_count = adaptation_field_length.to_ulong() - used_bytes;
@@ -113,9 +113,9 @@ void tsAdaptationField::Parse(const uint8_t* input) {
     this->Print();
 }
 
-void tsAdaptationField::Print() const {
+void TS_AdaptationField::Print() const {
     //AF: L= 47 DC=0 RA=0 SP=0 PR=0 OR=0 SP=0 TP=0 EX=0 Stuffing=46
-    std::cout << "\tAF:"  <<
+    std::cout << "AF:"  <<
                   " L="  << adaptation_field_length.to_ulong() <<
                   " DC=" << discontinuity_indicator.to_ulong() <<
                   " RA=" << random_access_indicator.to_ulong() <<

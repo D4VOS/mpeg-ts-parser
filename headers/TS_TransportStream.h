@@ -1,4 +1,4 @@
-#include "tsCommon.h"
+#include "TS_Common.h"
 
 /*
 MPEG-TS packet:
@@ -47,5 +47,6 @@ public:
   static constexpr uint32_t BaseToExtendedClockMultiplier =      300;
 
   static std::string getBitStream(const uint8_t*, int, int);
+  static std::string getBitStream2(const uint8_t*, int, int);
 };
 

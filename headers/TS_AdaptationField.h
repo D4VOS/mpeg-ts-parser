@@ -1,9 +1,9 @@
-#ifndef TRANSPORT_STREAM_PARSER_REWORK_TSADAPTATIONFIELD_H
-#define TRANSPORT_STREAM_PARSER_REWORK_TSADAPTATIONFIELD_H
+#ifndef TRANSPORT_STREAM_PARSER_REWORK_TS_ADAPTATIONFIELD_H
+#define TRANSPORT_STREAM_PARSER_REWORK_TS_ADAPTATIONFIELD_H
 
-#include "tsCommon.h"
+#include "TS_Common.h"
 
-class tsAdaptationField {
+class TS_AdaptationField {
 protected:
     std::bitset<8> adaptation_field_length;
     std::bitset<1> discontinuity_indicator;
@@ -41,7 +41,7 @@ protected:
     std::bitset<1> marker_bit;
     uint16_t stuffing_count;
 public:
-    tsAdaptationField();
+    TS_AdaptationField();
 public:
     void Reset();
     void Parse(const uint8_t*);
@@ -52,4 +52,4 @@ public: ///Getters
 };
 
 
-#endif //TRANSPORT_STREAM_PARSER_REWORK_TSADAPTATIONFIELD_H
+#endif //TRANSPORT_STREAM_PARSER_REWORK_TS_ADAPTATIONFIELD_H

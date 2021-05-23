@@ -1,4 +1,4 @@
-#include "../headers/tsTransportStream.h"
+#include "../headers/TS_TransportStream.h"
 
 std::string xTS::getBitStream(const uint8_t *input, int start, int count) {
     std::string byte_stream = "", stream = "";
@@ -14,5 +14,3 @@ std::string xTS::getBitStream(const uint8_t *input, int start, int count) {
     }
     return stream;
 }
-
-

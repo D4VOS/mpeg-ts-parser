@@ -1,17 +1,17 @@
-#ifndef TRANSPORT_STREAM_PARSER_REWORK_TSPACKETHEADER_H
-#define TRANSPORT_STREAM_PARSER_REWORK_TSPACKETHEADER_H
+#ifndef TRANSPORT_STREAM_PARSER_REWORK_TS_PACKETHEADER_H
+#define TRANSPORT_STREAM_PARSER_REWORK_TS_PACKETHEADER_H
 
-#include "tsCommon.h"
+#include "TS_Common.h"
 
-class tsPacketHeader {
+class TS_PacketHeader {
 public:
     enum class ePID : uint16_t {
         PAT = 0x0000,
         CAT = 0x0001,
         TSDT = 0x0002,
         IPMT = 0x0003,
-        NIT = 0x0010, //DVB specific PID
-        SDT = 0x0011, //DVB specific PID
+        NIT = 0x0010,
+        SDT = 0x0011,
         NuLL = 0x1FFF,
     };
 
@@ -27,8 +27,7 @@ protected:
 
 public: ///Setters and print
     void Reset();
-
-    void Parse(const uint8_t *); //int32_t
+    void Parse(const uint8_t *);
     void Print() const;
 
 public: ///Getters
@@ -58,5 +57,5 @@ public:
     }
 };
 
-#endif //TRANSPORT_STREAM_PARSER_REWORK_TSPACKETHEADER_H
+#endif //TRANSPORT_STREAM_PARSER_REWORK_TS_PACKETHEADER_H
 
