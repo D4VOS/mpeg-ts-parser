@@ -34,7 +34,7 @@ void TS_PacketHeader::Print() const {
                   " PID=" << PID.to_ulong() <<
                   " TSC=" << transport_scrambling_control.to_ulong() <<
                   " AF=" << adaptation_field_control.to_ulong() <<
-                  " CC=" << continuity_counter.to_ulong() << "\n";
+                  " CC=" << continuity_counter.to_ulong();
 }
 
 uint8_t TS_PacketHeader::getSyncByte() const { return sync_byte.to_ulong(); }

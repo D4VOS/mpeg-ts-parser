@@ -2,14 +2,16 @@
 #include "../headers/TS_TransportStream.h"
 
 void PES_PacketHeader::Parse(const uint8_t *input) {
+    this->Reset();
     std::stringstream ss(xTS::getBitStream(input, 0, xTS::PES_HeaderLength));
 
     ss >> packet_start_code_prefix;
     ss >> stream_id;
     ss >> PES_packet_length;
-    uint8_t current_byte = 6;
+
+    headerLength = 6;
     uint8_t ID = this->getStreamId();
-    std::cout << ID << eStreamId_program_stream_map;
+
     if (ID != eStreamId_program_stream_map &&
         ID != eStreamId_padding_stream &&
         ID != eStreamId_private_stream_2 &&
@@ -20,7 +22,7 @@ void PES_PacketHeader::Parse(const uint8_t *input) {
         ID != eStreamId_ITUT_H222_1_type_E) {
         ss.str(std::string());
         ss.clear();
-        ss << xTS::getBitStream(input, current_byte, 3); // grab flags
+        ss << xTS::getBitStream(input, headerLength, 3); // grab flags
 
         std::bitset<2> marker;  //dummy
         ss >> marker; //'10'
@@ -38,33 +40,46 @@ void PES_PacketHeader::Parse(const uint8_t *input) {
         ss >> PES_extension_flag;
         ss >> PES_header_data_length;
 
-        if (PTS_DTS_flags.to_ulong() == 2) {
+        ss.str(std::string());
+        ss.clear();
+        ss << xTS::getBitStream(input, xTS::PES_HeaderLength + 3, PES_header_data_length.to_ulong()); // grab flags
+        headerLength += 3 + PES_header_data_length.to_ulong();
+        if (PTS_DTS_flags.to_ulong() == 2) {    //'10'
             ss.ignore(4);
             std::bitset<3> PTS_32_30;
+            ss >> PTS_32_30;
             ss.ignore(1);
             std::bitset<15> PTS_29_15;
+            ss >> PTS_29_15;
             ss.ignore(1);
             std::bitset<15> PTS_14_0;
+            ss >> PTS_14_0;
             ss.ignore(1);
-
             PTS = connectBitsets(PTS_32_30, PTS_29_15, PTS_14_0);
             is_PTS = true;
         }
-        if (PTS_DTS_flags.to_ulong() == 3) {
+        if (PTS_DTS_flags.to_ulong() == 3) {    //'11'
             ss.ignore(4);
             std::bitset<3> PTS_32_30;
+            ss >> PTS_32_30;
             ss.ignore(1);
             std::bitset<15> PTS_29_15;
+            ss >> PTS_29_15;
             ss.ignore(1);
             std::bitset<15> PTS_14_0;
+            ss >> PTS_14_0;
             ss.ignore(1);
+
 
             ss.ignore(4);
             std::bitset<3> DTS_32_30;
+            ss >> DTS_32_30;
             ss.ignore(1);
             std::bitset<15> DTS_29_15;
+            ss >> DTS_29_15;
             ss.ignore(1);
             std::bitset<15> DTS_14_0;
+            ss >> DTS_14_0;
             ss.ignore(1);
 
             PTS = connectBitsets(PTS_32_30, PTS_29_15, PTS_14_0);
@@ -72,13 +87,17 @@ void PES_PacketHeader::Parse(const uint8_t *input) {
             DTS = connectBitsets(DTS_32_30, DTS_29_15, DTS_14_0);
             is_DTS = true;
         }
+        ss.str(std::string());
+        ss.clear();
     }
 
 
 }
 
 std::bitset<33> PES_PacketHeader::connectBitsets(std::bitset<3> first, std::bitset<15> second, std::bitset<15> third) {
-    return std::bitset<33>(std::string(first.to_string() + second.to_string() + third.to_string()));
+    std::string value = (first.to_string() + second.to_string() + third.to_string());
+    //::cout << "\n|" << third.to_string() << "|\n";
+    return std::bitset<33>(value);
 }
 
 void PES_PacketHeader::Print() const {
@@ -89,12 +108,12 @@ void PES_PacketHeader::Print() const {
 
     if (is_PTS) {
         std::cout << " PTS=" << PTS.to_ulong() <<
-                  "(Time=" << float(PTS.to_ulong() / xTS::BaseClockFrequency_Hz) << "s.)";
+                  " (Time=" << double(PTS.to_ulong()) / double(xTS::BaseClockFrequency_Hz) << "s.)";
     }
 
     if (is_DTS) {
         std::cout << " DTS=" << DTS.to_ulong() <<
-                  "(Time=" << float(DTS.to_ulong() / xTS::BaseClockFrequency_Hz) << "s.)";
+                  " (Time=" << double(DTS.to_ulong()) / double(xTS::BaseClockFrequency_Hz) << "s.)";
     }
 }
 

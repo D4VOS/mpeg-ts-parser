@@ -4,7 +4,6 @@
 #include <cfloat>
 #include <climits>
 #include <cstddef>
-
 #define NOT_VALID  -1
 #include <iostream>
 #include <fstream>
@@ -14,6 +13,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <vector>
+
 
 #if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || defined(_M_IX86))
 #include <intrin.h>
@@ -41,3 +41,5 @@ static inline  int64_t xSwapBytes64( int64_t Value) { return __builtin_bswap64(V
 #else
 #error Unrecognized compiler
 #endif
+
+

@@ -16,7 +16,7 @@ int main(int argc, char *argv[], char *envp[]) {
 
     TS_PacketHeader packetHeader;
     TS_AdaptationField adaptationField;
-    PES_Assembler PES_Assembler;
+    PES_Assembler PES_Assembler_VOICE(136), PES_Assembler_VIDEO(174);
 
     int32_t TS_PacketId = 0;
     while(!feof(TSFile))
@@ -32,18 +32,25 @@ int main(int argc, char *argv[], char *envp[]) {
             {
                 adaptationField.Parse(buffer);
             }
-            printf("\n%010d ", TS_PacketId);
+            printf("%010d ", TS_PacketId);
             packetHeader.Print();
 
             if(packetHeader.hasAdaptationField()) { adaptationField.Print(); }
-            PES_Assembler::eResult Result = PES_Assembler.AbsorbPacket(buffer, &packetHeader, &adaptationField);
+            PES_Assembler::eResult Result = PES_Assembler_VOICE.AbsorbPacket(buffer, &packetHeader, &adaptationField);
 
             switch(Result)
             {
-                case PES_Assembler::eResult::StreamPackedLost : printf("PcktLost "); break;
-                case PES_Assembler::eResult::AssemblingStarted : printf("Started "); PES_Assembler.PrintPESH(); break;
-                case PES_Assembler::eResult::AssemblingContinue: printf("Continue "); break;
-                case PES_Assembler::eResult::AssemblingFinished: printf("Finished "); printf("PES: Len=%d", PES_Assembler.getNumPacketBytes()); break;
+                case PES_Assembler::eResult::StreamPackedLost : printf(" PcktLost "); break;
+                case PES_Assembler::eResult::AssemblingStarted : printf(" Started "); PES_Assembler_VOICE.PrintPESH(); break;
+                case PES_Assembler::eResult::AssemblingContinue: printf(" Continue "); break;
+                case PES_Assembler::eResult::AssemblingFinished: printf(" Finished ");
+                    {
+                        //PES: PcktLen=2894 HeadLen=14 DataLen=2880
+                        printf("PES: PcktLen=%d", PES_Assembler_VOICE.getPacketLength());
+                        printf(" HeadLen=%d", PES_Assembler_VOICE.getHeaderLength());
+                        printf(" DataLen=%d", PES_Assembler_VOICE.getDataLength());
+                        break;
+                    }
                 default: break;
             }
             printf("\n");

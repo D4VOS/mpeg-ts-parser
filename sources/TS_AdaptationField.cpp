@@ -44,9 +44,9 @@ void TS_AdaptationField::Reset() {
 
 void TS_AdaptationField::Parse(const uint8_t* input) {
     //this->Reset();
-    std::stringstream ss(xTS::getBitStream(input, 5, adaptation_field_length.to_ulong()));
-
     adaptation_field_length = input[4];
+
+    std::stringstream ss(xTS::getBitStream(input, 5, adaptation_field_length.to_ulong()));
     int used_bytes = 1;
 
     if(adaptation_field_length.to_ulong() > 0){
@@ -58,6 +58,7 @@ void TS_AdaptationField::Parse(const uint8_t* input) {
         ss >> splicing_point_flag;
         ss >> transport_private_data_flag;
         ss >> adaptation_field_extension_flag;
+
         if(PCR_flag == '1'){
             used_bytes += 6;
             ss >> PCR_base;
@@ -110,12 +111,13 @@ void TS_AdaptationField::Parse(const uint8_t* input) {
         }
         stuffing_count = adaptation_field_length.to_ulong() - used_bytes;
     }
-    this->Print();
+    ss.str(std::string());
+    ss.clear();
 }
 
 void TS_AdaptationField::Print() const {
     //AF: L= 47 DC=0 RA=0 SP=0 PR=0 OR=0 SP=0 TP=0 EX=0 Stuffing=46
-    std::cout << "AF:"  <<
+    std::cout << " AF:"  <<
                   " L="  << adaptation_field_length.to_ulong() <<
                   " DC=" << discontinuity_indicator.to_ulong() <<
                   " RA=" << random_access_indicator.to_ulong() <<
