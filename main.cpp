@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[], char *envp[]) {
     FILE *TSFile, *Output;
-    TSFile = fopen("resources/example_new.ts", "rb");
+    TSFile = fopen("example_new.ts", "rb");
     if(TSFile == NULL) { printf("wrong file name\n"); return EXIT_FAILURE; }
 
     Output = fopen("output.txt", "w");
@@ -26,36 +26,67 @@ int main(int argc, char *argv[], char *envp[]) {
         packetHeader.Reset();
         packetHeader.Parse(buffer);
         adaptationField.Reset();
-        if(packetHeader.getSyncByte() == 'G' && packetHeader.getPID() == 136)
+        if(packetHeader.getSyncByte() == 'G')
         {
-            if(packetHeader.hasAdaptationField())
-            {
-                adaptationField.Parse(buffer);
-            }
-            printf("%010d ", TS_PacketId);
-            packetHeader.Print();
+            if(packetHeader.getPID() == 136) {
+                if (packetHeader.hasAdaptationField()) {
+                    adaptationField.Parse(buffer);
+                }
+                //printf("%010d ", TS_PacketId);
+                //packetHeader.Print();
 
-            if(packetHeader.hasAdaptationField()) { adaptationField.Print(); }
-            PES_Assembler::eResult Result = PES_Assembler_VOICE.AbsorbPacket(buffer, &packetHeader, &adaptationField);
+                //if(packetHeader.hasAdaptationField()) { adaptationField.Print(); }
+                PES_Assembler::eResult Result = PES_Assembler_VOICE.AbsorbPacket(buffer, &packetHeader,
+                                                                                 &adaptationField);
 
-            switch(Result)
-            {
-                case PES_Assembler::eResult::StreamPackedLost : printf(" PcktLost "); break;
-                case PES_Assembler::eResult::AssemblingStarted : printf(" Started "); PES_Assembler_VOICE.PrintPESH(); break;
-                case PES_Assembler::eResult::AssemblingContinue: printf(" Continue "); break;
-                case PES_Assembler::eResult::AssemblingFinished: printf(" Finished ");
-                    {
-                        //PES: PcktLen=2894 HeadLen=14 DataLen=2880
-                        printf("PES: PcktLen=%d", PES_Assembler_VOICE.getPacketLength());
-                        printf(" HeadLen=%d", PES_Assembler_VOICE.getHeaderLength());
-                        printf(" DataLen=%d", PES_Assembler_VOICE.getDataLength());
-                        break;
-                    }
-                default: break;
+                //switch(Result)
+                //{
+                //    case PES_Assembler::eResult::StreamPackedLost : printf(" PcktLost "); break;
+                //    case PES_Assembler::eResult::AssemblingStarted : printf(" Started "); PES_Assembler_VOICE.PrintPESH(); break;
+                //    case PES_Assembler::eResult::AssemblingContinue: printf(" Continue "); break;
+                //    case PES_Assembler::eResult::AssemblingFinished: printf(" Finished ");
+                //        {
+                //            PES: PcktLen=2894 HeadLen=14 DataLen=2880
+                //            printf("PES: PcktLen=%d", PES_Assembler_VOICE.getPacketLength());
+                //            printf(" HeadLen=%d", PES_Assembler_VOICE.getHeaderLength());
+                //            printf(" DataLen=%d", PES_Assembler_VOICE.getDataLength());
+                //            break;
+                //        }
+                //    default: break;
+                //}
+                //printf("\n");
             }
-            printf("\n");
+            else if(packetHeader.getPID() == 174) {
+                if (packetHeader.hasAdaptationField()) {
+                    adaptationField.Parse(buffer);
+                }
+                //printf("%010d ", TS_PacketId);
+                //packetHeader.Print();
+
+                //if(packetHeader.hasAdaptationField()) { adaptationField.Print(); }
+                PES_Assembler::eResult Result = PES_Assembler_VIDEO.AbsorbPacket(buffer, &packetHeader,
+                                                                                 &adaptationField);
+
+                //switch(Result)
+                //{
+                //    case PES_Assembler::eResult::StreamPackedLost : printf(" PcktLost "); break;
+                //    case PES_Assembler::eResult::AssemblingStarted : printf(" Started "); PES_Assembler_VIDEO.PrintPESH(); break;
+                //    case PES_Assembler::eResult::AssemblingContinue: printf(" Continue "); break;
+                //    case PES_Assembler::eResult::AssemblingFinished: printf(" Finished ");
+                //        {
+                //            PES: PcktLen=2894 HeadLen=14 DataLen=2880
+                //            printf("PES: PcktLen=%d", PES_Assembler_VIDEO.getPacketLength());
+                //            printf(" HeadLen=%d", PES_Assembler_VIDEO.getHeaderLength());
+                //            printf(" DataLen=%d", PES_Assembler_VIDEO.getDataLength());
+                //            break;
+                //        }
+                //    default: break;
+                //}
+                //printf("\n");
+            }
+
+            TS_PacketId++;
         }
-        TS_PacketId++;
     }
 
     fclose(Output);

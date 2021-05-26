@@ -8,8 +8,9 @@ PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     bufferSize = 0;
     started = false;
     dataOffset = xTS::PES_HeaderLength;
-    buffer = NULL;
-    if (pid == 136) { file = fopen("voice.mp2", "wb"); }    //voice file
+    uint8_t clear_buffer = 0;
+    buffer = &clear_buffer;
+    if (pid == 136) { file = fopen("voice.bin", "wb"); }    //voice file
     else if (pid == 174) file = fopen("vision.264", "wb");  //video file
 }
 
@@ -32,6 +33,13 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
     }
 
     if (PacketHeader->getPayloadUnitStartIndicator() == 1) {
+        if (started && PESH.getPacketLength() == 0)
+        {
+            started = false;
+            size_t writed = fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
+            xBufferReset();
+        }
+
         if (buffer != nullptr) xBufferReset();
         started = true;
         lastContinuityCounter = PacketHeader->getContinuityCounter();
@@ -68,7 +76,7 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
         if (PESH.getPacketLength() + 6 == bufferSize) {
             started = false;
 
-            fwrite(&buffer[this->getHeaderLength()], this->getDataLength(), 1, file);
+            fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
             return eResult::AssemblingFinished;
         }
         return eResult::AssemblingContinue;
@@ -95,8 +103,8 @@ void PES_Assembler::xBufferAppend(const uint8_t *input, int32_t size) {
 
     std::memcpy(temp_buffer, buffer, bufferSize - size);
     std::memcpy(&temp_buffer[bufferSize - size], input, size);
-
+    delete [] buffer;
     buffer = new uint8_t[bufferSize];
     std::memcpy(buffer, temp_buffer, bufferSize);
-
+    delete [] temp_buffer;
 }

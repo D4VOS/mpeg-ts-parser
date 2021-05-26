@@ -1,7 +1,11 @@
 # Project exclude paths
 /cmake-build-debug/
 *.ts
+*.264
+*.bin
+*.mp2
 /parser.cpp
 /app.exe
 /output.txt
 /.idea
+*.exe
