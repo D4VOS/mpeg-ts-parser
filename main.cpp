@@ -4,7 +4,7 @@
 #include "headers/TS_AdaptationField.h"
 #include "headers/PES_Assembler.h"
 
-void packetInfo(TS_PacketHeader &header, TS_AdaptationField &af, int packetID, uint8_t *buffer){
+void packetInfo(TS_PacketHeader &header, TS_AdaptationField &af, int packetID, uint8_t *buffer) {
     if (header.hasAdaptationField()) {
         af.Parse(buffer);
     }
