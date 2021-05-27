@@ -6,6 +6,6 @@
 *.mp2
 /parser.cpp
 /app.exe
-/output.txt
 /.idea
 *.exe
+*.txt

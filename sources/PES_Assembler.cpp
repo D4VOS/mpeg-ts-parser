@@ -2,7 +2,7 @@
 #include "../headers/TS_TransportStream.h"
 #include <cstring>
 #include <assert.h>
-
+int SAVED = 0;
 PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     lastContinuityCounter = -1;     //start ind
     bufferSize = 0;
@@ -10,8 +10,7 @@ PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     dataOffset = xTS::PES_HeaderLength;
     uint8_t clear_buffer = 0;
     buffer = &clear_buffer;
-    if (pid == 136) { file = fopen("voice.bin", "wb"); }    //voice file
-    else if (pid == 174) file = fopen("vision.264", "wb");  //video file
+    file = fopen(std::string("outputs/output_pid"+std::to_string(PID)+".bin").c_str(), "wb");
 }
 
 PES_Assembler::~PES_Assembler() {}
@@ -25,7 +24,6 @@ PES_Assembler::eResult
 PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
                             const TS_PacketHeader *PacketHeader,
                             const TS_AdaptationField *AdaptationField) {
-
     int CC = int(PacketHeader->getContinuityCounter()), start = 0, payload = 0;
     if (lastContinuityCounter != -1 && (CC - lastContinuityCounter != 1 && CC - lastContinuityCounter != -15)) {
         xBufferReset();
@@ -36,7 +34,7 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
         if (started && PESH.getPacketLength() == 0)
         {
             started = false;
-            size_t writed = fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
+            fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
             xBufferReset();
         }
 
@@ -44,12 +42,15 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
         started = true;
         lastContinuityCounter = PacketHeader->getContinuityCounter();
 
-        if (AdaptationField->getAdaptationFieldLength() == 0) {
-            payload = 182 - AdaptationField->getAdaptationFieldLength();
-            start = 6 + AdaptationField->getAdaptationFieldLength();
-        }else{
-            payload = 183 - AdaptationField->getAdaptationFieldLength();
-            start = 5 + AdaptationField->getAdaptationFieldLength();
+        start = xTS::TS_HeaderLength + AdaptationField->getAdaptationFieldLength() + 1;
+        payload =
+                xTS::TS_PacketLength
+                - xTS::TS_HeaderLength
+                - (AdaptationField->getAdaptationFieldLength() + 1);
+        if (AdaptationField->getAdaptationFieldLength() == 0)
+        {
+            start--;
+            payload++;
         }
 
         PESH.Parse(&TransportStreamPacket[start]);
@@ -64,18 +65,22 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
 
         if (PacketHeader->hasAdaptationField())
         {
-            start = 5 + AdaptationField->getAdaptationFieldLength();
-            payload = 183 - AdaptationField->getAdaptationFieldLength();
-        } else {
-            start = 4;
-            payload = 184;
+            start = xTS::TS_HeaderLength + AdaptationField->getAdaptationFieldLength() + 1;
+            payload =
+                    xTS::TS_PacketLength
+                    - xTS::TS_HeaderLength
+                    - (AdaptationField->getAdaptationFieldLength() + 1);
+        }
+        else
+        {
+            start = xTS::TS_HeaderLength;
+            payload = xTS::TS_PacketLength - xTS::TS_HeaderLength;
         }
 
         xBufferAppend(&TransportStreamPacket[start], payload);
 
         if (PESH.getPacketLength() + 6 == bufferSize) {
             started = false;
-
             fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
             return eResult::AssemblingFinished;
         }

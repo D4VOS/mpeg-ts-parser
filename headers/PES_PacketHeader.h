@@ -57,6 +57,8 @@ public:
     uint16_t getPacketLength () const { return PES_packet_length.to_ulong(); }
     uint8_t getHeaderLen() const { return headerLength; }
     uint8_t getHeaderDataLength() const { return 3 + PES_header_data_length.to_ulong(); }
+
+    void wipe(std::basic_stringstream<char, std::char_traits<char>, std::allocator<char> >*);
     std::bitset<33> connectBitsets(std::bitset<3>,std::bitset<15>, std::bitset<15>);
 };
 

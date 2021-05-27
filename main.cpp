@@ -4,13 +4,60 @@
 #include "headers/TS_AdaptationField.h"
 #include "headers/PES_Assembler.h"
 
+void parsePID(PES_Assembler &current, TS_PacketHeader &header, TS_AdaptationField &af, int packetID, uint8_t *buffer) {
+    if (header.hasAdaptationField()) {
+        af.Parse(buffer);
+    }
+    std::cout << std::setfill('0') << std::setw(10);
+    std::cout << packetID << " ";
+    header.Print();
+
+    if (header.hasAdaptationField()) { af.Print(); }
+    PES_Assembler::eResult Result = current.AbsorbPacket(buffer, &header, &af);
+    switch (Result) {
+        case PES_Assembler::eResult::StreamPackedLost : {
+            std::cout << " PcktLost ";
+            break;
+        }
+        case PES_Assembler::eResult::AssemblingStarted : {
+            std::cout << " Started ";
+            current.PrintPESH();
+            break;
+        }
+        case PES_Assembler::eResult::AssemblingContinue: {
+            std::cout << " Continue ";
+            break;
+        }
+        case PES_Assembler::eResult::AssemblingFinished: {
+            std::cout << " Finished ";
+            {
+                std::cout << "PES: PcktLen=" << current.getPacketLength();
+                std::cout << " HeadLen=" << current.getHeaderLength();
+                std::cout << " DataLen=" << current.getDataLength();
+                break;
+            }
+        }
+        default: {
+            break;
+        }
+    }
+    std::cout << "\n";
+}
 
 int main(int argc, char *argv[], char *envp[]) {
-    FILE *TSFile, *Output;
-    TSFile = fopen("example_new.ts", "rb");
-    if(TSFile == NULL) { printf("wrong file name\n"); return EXIT_FAILURE; }
+    FILE *TSFile;
+    TSFile = fopen("resources/example_new.ts", "rb");
 
-    Output = fopen("output.txt", "w");
+
+    buffer_restore b(std::cout);                // std::cout -> output.txt
+    std::ofstream file("outputs/listing.txt");   // comment these three line
+    std::cout.rdbuf(file.rdbuf());                // to standard output
+
+
+    if (TSFile == NULL) {
+        std::cout << "Wrong file name\n";
+        return EXIT_FAILURE;
+    }
 
     uint8_t buffer[xTS::TS_PacketLength];
 
@@ -18,78 +65,33 @@ int main(int argc, char *argv[], char *envp[]) {
     TS_AdaptationField adaptationField;
     PES_Assembler PES_Assembler_VOICE(136), PES_Assembler_VIDEO(174);
 
-    int32_t TS_PacketId = 0;
-    while(!feof(TSFile))
-    {
+    printf("Started parsing example_new.ts file.. ");
+    int32_t TS_PacketId = 0, currentPID = 0;
+    while (!feof(TSFile)) {
+
         size_t NumRead = fread(buffer, 1, xTS::TS_PacketLength, TSFile);
-        if(NumRead != xTS::TS_PacketLength) { break; }
+        if (NumRead != xTS::TS_PacketLength) { break; }
         packetHeader.Reset();
         packetHeader.Parse(buffer);
         adaptationField.Reset();
-        if(packetHeader.getSyncByte() == 'G')
-        {
-            if(packetHeader.getPID() == 136) {
-                if (packetHeader.hasAdaptationField()) {
-                    adaptationField.Parse(buffer);
+        if (packetHeader.getSyncByte() == 'G') {
+            currentPID = packetHeader.getPID();
+            switch (currentPID) {
+                case (136): {
+                    parsePID(PES_Assembler_VOICE, packetHeader, adaptationField, TS_PacketId, buffer);
+                    break;
                 }
-                //printf("%010d ", TS_PacketId);
-                //packetHeader.Print();
-
-                //if(packetHeader.hasAdaptationField()) { adaptationField.Print(); }
-                PES_Assembler::eResult Result = PES_Assembler_VOICE.AbsorbPacket(buffer, &packetHeader,
-                                                                                 &adaptationField);
-
-                //switch(Result)
-                //{
-                //    case PES_Assembler::eResult::StreamPackedLost : printf(" PcktLost "); break;
-                //    case PES_Assembler::eResult::AssemblingStarted : printf(" Started "); PES_Assembler_VOICE.PrintPESH(); break;
-                //    case PES_Assembler::eResult::AssemblingContinue: printf(" Continue "); break;
-                //    case PES_Assembler::eResult::AssemblingFinished: printf(" Finished ");
-                //        {
-                //            PES: PcktLen=2894 HeadLen=14 DataLen=2880
-                //            printf("PES: PcktLen=%d", PES_Assembler_VOICE.getPacketLength());
-                //            printf(" HeadLen=%d", PES_Assembler_VOICE.getHeaderLength());
-                //            printf(" DataLen=%d", PES_Assembler_VOICE.getDataLength());
-                //            break;
-                //        }
-                //    default: break;
-                //}
-                //printf("\n");
-            }
-            else if(packetHeader.getPID() == 174) {
-                if (packetHeader.hasAdaptationField()) {
-                    adaptationField.Parse(buffer);
+                case (174): {
+                    parsePID(PES_Assembler_VIDEO, packetHeader, adaptationField, TS_PacketId, buffer);
+                    break;
                 }
-                //printf("%010d ", TS_PacketId);
-                //packetHeader.Print();
-
-                //if(packetHeader.hasAdaptationField()) { adaptationField.Print(); }
-                PES_Assembler::eResult Result = PES_Assembler_VIDEO.AbsorbPacket(buffer, &packetHeader,
-                                                                                 &adaptationField);
-
-                //switch(Result)
-                //{
-                //    case PES_Assembler::eResult::StreamPackedLost : printf(" PcktLost "); break;
-                //    case PES_Assembler::eResult::AssemblingStarted : printf(" Started "); PES_Assembler_VIDEO.PrintPESH(); break;
-                //    case PES_Assembler::eResult::AssemblingContinue: printf(" Continue "); break;
-                //    case PES_Assembler::eResult::AssemblingFinished: printf(" Finished ");
-                //        {
-                //            PES: PcktLen=2894 HeadLen=14 DataLen=2880
-                //            printf("PES: PcktLen=%d", PES_Assembler_VIDEO.getPacketLength());
-                //            printf(" HeadLen=%d", PES_Assembler_VIDEO.getHeaderLength());
-                //            printf(" DataLen=%d", PES_Assembler_VIDEO.getDataLength());
-                //            break;
-                //        }
-                //    default: break;
-                //}
-                //printf("\n");
+                default:
+                    break;
             }
-
             TS_PacketId++;
         }
     }
-
-    fclose(Output);
+    printf("Done. Listing in output/listing.txt.");
     fclose(TSFile);
     return 0;
 }

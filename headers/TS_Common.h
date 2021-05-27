@@ -13,7 +13,21 @@
 #include <iomanip>
 #include <algorithm>
 #include <vector>
+#include <streambuf>
 
+class buffer_restore
+{
+    std::ostream&   os;
+    std::streambuf* buf;
+public:
+    buffer_restore(std::ostream& os) : os(os), buf(os.rdbuf())
+    { }
+
+    ~buffer_restore()
+    {
+        os.rdbuf(buf);
+    }
+};
 
 #if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_AMD64) || defined(_M_IX86))
 #include <intrin.h>
