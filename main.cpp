@@ -4,7 +4,7 @@
 #include "headers/TS_AdaptationField.h"
 #include "headers/PES_Assembler.h"
 
-void parsePID(PES_Assembler &current, TS_PacketHeader &header, TS_AdaptationField &af, int packetID, uint8_t *buffer) {
+void packetInfo(TS_PacketHeader &header, TS_AdaptationField &af, int packetID, uint8_t *buffer){
     if (header.hasAdaptationField()) {
         af.Parse(buffer);
     }
@@ -13,6 +13,11 @@ void parsePID(PES_Assembler &current, TS_PacketHeader &header, TS_AdaptationFiel
     header.Print();
 
     if (header.hasAdaptationField()) { af.Print(); }
+}
+
+
+void parsePID(PES_Assembler &current, TS_PacketHeader &header, TS_AdaptationField &af, int packetID, uint8_t *buffer) {
+    packetInfo(header, af, packetID, buffer);
     PES_Assembler::eResult Result = current.AbsorbPacket(buffer, &header, &af);
     switch (Result) {
         case PES_Assembler::eResult::StreamPackedLost : {
@@ -77,15 +82,17 @@ int main(int argc, char *argv[], char *envp[]) {
         if (packetHeader.getSyncByte() == 'G') {
             currentPID = packetHeader.getPID();
             switch (currentPID) {
-                case (136): {
+                case (136): {   // voice
                     parsePID(PES_Assembler_VOICE, packetHeader, adaptationField, TS_PacketId, buffer);
                     break;
                 }
-                case (174): {
+                case (174): {   //video
                     parsePID(PES_Assembler_VIDEO, packetHeader, adaptationField, TS_PacketId, buffer);
                     break;
                 }
-                default:
+                default:    //other PIDs
+                    packetInfo(packetHeader, adaptationField, TS_PacketId, buffer);
+                    std::cout << "\n";
                     break;
             }
             TS_PacketId++;
