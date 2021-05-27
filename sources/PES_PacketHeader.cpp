@@ -90,7 +90,7 @@ void PES_PacketHeader::Parse(const uint8_t *input) {
 
 }
 
-void PES_PacketHeader::wipe(std::basic_stringstream<char, std::char_traits<char>, std::allocator<char> >* stream){
+void PES_PacketHeader::wipe(std::basic_stringstream<char, std::char_traits<char>, std::allocator<char> > *stream) {
     stream->str(std::string());
     stream->clear();
 }

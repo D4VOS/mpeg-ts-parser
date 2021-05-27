@@ -2,7 +2,9 @@
 #include "../headers/TS_TransportStream.h"
 #include <cstring>
 #include <assert.h>
+
 int SAVED = 0;
+
 PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     lastContinuityCounter = -1;     //start ind
     bufferSize = 0;
@@ -10,7 +12,7 @@ PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     dataOffset = xTS::PES_HeaderLength;
     uint8_t clear_buffer = 0;
     buffer = &clear_buffer;
-    file = fopen(std::string("outputs/output_pid"+std::to_string(PID)+".bin").c_str(), "wb");
+    file = fopen(std::string("outputs/output_pid" + std::to_string(PID) + ".bin").c_str(), "wb");
 }
 
 PES_Assembler::~PES_Assembler() {}
@@ -31,8 +33,7 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
     }
 
     if (PacketHeader->getPayloadUnitStartIndicator() == 1) {
-        if (started && PESH.getPacketLength() == 0)
-        {
+        if (started && PESH.getPacketLength() == 0) {
             started = false;
             fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
             xBufferReset();
@@ -47,8 +48,7 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
                 xTS::TS_PacketLength
                 - xTS::TS_HeaderLength
                 - (AdaptationField->getAdaptationFieldLength() + 1);
-        if (AdaptationField->getAdaptationFieldLength() == 0)
-        {
+        if (AdaptationField->getAdaptationFieldLength() == 0) {
             start--;
             payload++;
         }
@@ -63,16 +63,13 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
     if (started) {
         lastContinuityCounter = PacketHeader->getContinuityCounter();
 
-        if (PacketHeader->hasAdaptationField())
-        {
+        if (PacketHeader->hasAdaptationField()) {
             start = xTS::TS_HeaderLength + AdaptationField->getAdaptationFieldLength() + 1;
             payload =
                     xTS::TS_PacketLength
                     - xTS::TS_HeaderLength
                     - (AdaptationField->getAdaptationFieldLength() + 1);
-        }
-        else
-        {
+        } else {
             start = xTS::TS_HeaderLength;
             payload = xTS::TS_PacketLength - xTS::TS_HeaderLength;
         }
@@ -108,8 +105,8 @@ void PES_Assembler::xBufferAppend(const uint8_t *input, int32_t size) {
 
     std::memcpy(temp_buffer, buffer, bufferSize - size);
     std::memcpy(&temp_buffer[bufferSize - size], input, size);
-    delete [] buffer;
+    delete[] buffer;
     buffer = new uint8_t[bufferSize];
     std::memcpy(buffer, temp_buffer, bufferSize);
-    delete [] temp_buffer;
+    delete[] temp_buffer;
 }

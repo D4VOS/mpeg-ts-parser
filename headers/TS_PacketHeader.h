@@ -27,7 +27,9 @@ protected:
 
 public: ///Setters and print
     void Reset();
+
     void Parse(const uint8_t *);
+
     void Print() const;
 
 public: ///Getters

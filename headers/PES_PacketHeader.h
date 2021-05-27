@@ -3,11 +3,9 @@
 
 #include "TS_Common.h"
 
-class PES_PacketHeader
-{
+class PES_PacketHeader {
 public:
-    enum eStreamId : uint8_t
-    {
+    enum eStreamId : uint8_t {
         eStreamId_program_stream_map = 0xBC,
         eStreamId_padding_stream = 0xBE,
         eStreamId_private_stream_2 = 0xBF,
@@ -48,18 +46,26 @@ protected:
     uint8_t headerLength;
 public:
     void Reset();
-    void Parse(const uint8_t*);
+
+    void Parse(const uint8_t *);
+
     void Print() const;
+
 public:
 //PES packet header
     uint32_t getPacketStartCodePrefix() const { return packet_start_code_prefix.to_ulong(); }
-    uint8_t getStreamId () const { return stream_id.to_ulong(); }
-    uint16_t getPacketLength () const { return PES_packet_length.to_ulong(); }
+
+    uint8_t getStreamId() const { return stream_id.to_ulong(); }
+
+    uint16_t getPacketLength() const { return PES_packet_length.to_ulong(); }
+
     uint8_t getHeaderLen() const { return headerLength; }
+
     uint8_t getHeaderDataLength() const { return 3 + PES_header_data_length.to_ulong(); }
 
-    void wipe(std::basic_stringstream<char, std::char_traits<char>, std::allocator<char> >*);
-    std::bitset<33> connectBitsets(std::bitset<3>,std::bitset<15>, std::bitset<15>);
+    void wipe(std::basic_stringstream<char, std::char_traits<char>, std::allocator<char> > *);
+
+    std::bitset<33> connectBitsets(std::bitset<3>, std::bitset<15>, std::bitset<15>);
 };
 
 #endif //TRANSPORT_STREAM_PARSER_REWORK_PES_PACKETHEADER_H

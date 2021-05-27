@@ -27,14 +27,14 @@ void TS_PacketHeader::Reset() {
 
 void TS_PacketHeader::Print() const {
     std::cout << "TS:"
-                  " SB=" << sync_byte.to_ulong() <<
-                  " E=" << transport_error_indicator.to_ulong() <<
-                  " S=" << payload_unit_start_indicator.to_ulong() <<
-                  " P=" << transport_priority.to_ulong() <<
-                  " PID=" << PID.to_ulong() <<
-                  " TSC=" << transport_scrambling_control.to_ulong() <<
-                  " AF=" << adaptation_field_control.to_ulong() <<
-                  " CC=" << continuity_counter.to_ulong();
+                 " SB=" << sync_byte.to_ulong() <<
+              " E=" << transport_error_indicator.to_ulong() <<
+              " S=" << payload_unit_start_indicator.to_ulong() <<
+              " P=" << transport_priority.to_ulong() <<
+              " PID=" << PID.to_ulong() <<
+              " TSC=" << transport_scrambling_control.to_ulong() <<
+              " AF=" << adaptation_field_control.to_ulong() <<
+              " CC=" << continuity_counter.to_ulong();
 }
 
 uint8_t TS_PacketHeader::getSyncByte() const { return sync_byte.to_ulong(); }

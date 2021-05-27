@@ -32,20 +32,24 @@ protected:
     int8_t lastContinuityCounter;
     bool started;
     PES_PacketHeader PESH;
-    FILE* file;
+    FILE *file;
 public:
     PES_Assembler(uint8_t);
 
     ~PES_Assembler();
 
 public:
-    void    Init(int32_t PID, std::string file_extension);
-    eResult AbsorbPacket(const uint8_t* TransportStreamPacket, const TS_PacketHeader* PacketHeader, const TS_AdaptationField* AdaptationField);
+    void Init(int32_t PID, std::string file_extension);
+
+    eResult AbsorbPacket(const uint8_t *TransportStreamPacket, const TS_PacketHeader *PacketHeader,
+                         const TS_AdaptationField *AdaptationField);
 
     void PrintPESH() const;
 
     uint8_t *getPacket() { return &buffer[this->getHeaderLength()]; }
-    FILE* getFile(){return file;}
+
+    FILE *getFile() { return file; }
+
     int32_t getPacketLength() const { return dataOffset; }
 
     int32_t getHeaderLength() const { return PESH.getHeaderDataLength() + 6; }
