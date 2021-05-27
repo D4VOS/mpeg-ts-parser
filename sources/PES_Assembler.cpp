@@ -15,7 +15,12 @@ PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     file = fopen(std::string("outputs/output_pid" + std::to_string(PID) + ".bin").c_str(), "wb");
 }
 
-PES_Assembler::~PES_Assembler() {}
+PES_Assembler::~PES_Assembler() {
+    if(started) {
+        fwrite(&buffer[this->getHeaderLength()], this->getDataLength(), 1, file);
+    }
+    delete [] buffer;
+}
 
 void PES_Assembler::PrintPESH() const {
     PESH.Print();
@@ -35,7 +40,7 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
     if (PacketHeader->getPayloadUnitStartIndicator() == 1) {
         if (started && PESH.getPacketLength() == 0) {
             started = false;
-            fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
+            fwrite(&buffer[this->getHeaderLength()], this->getDataLength(), 1, file);
             xBufferReset();
         }
 
@@ -78,7 +83,7 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
 
         if (PESH.getPacketLength() + 6 == bufferSize) {
             started = false;
-            fwrite(&buffer[this->getHeaderLength()], 1, this->getDataLength(), file);
+            fwrite(&buffer[this->getHeaderLength()], this->getDataLength(), 1, file);
             return eResult::AssemblingFinished;
         }
         return eResult::AssemblingContinue;
