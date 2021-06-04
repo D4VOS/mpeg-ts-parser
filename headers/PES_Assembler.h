@@ -23,6 +23,7 @@ protected:
     uint8_t *buffer;
     uint32_t bufferSize;
     uint32_t dataOffset;
+    uint8_t clear_buffer;
 
 //operation
     int8_t lastContinuityCounter;
