@@ -1,7 +1,5 @@
 #include "../headers/PES_Assembler.h"
 #include "../headers/TS_TransportStream.h"
-#include <cstring>
-#include <assert.h>
 
 int SAVED = 0;
 
@@ -12,14 +10,27 @@ PES_Assembler::PES_Assembler(uint8_t pid) : PID(pid) {
     dataOffset = xTS::PES_HeaderLength;
     uint8_t clear_buffer = 0;
     buffer = &clear_buffer;
-    file = fopen(std::string("outputs/output_pid" + std::to_string(PID) + ".bin").c_str(), "wb");
+
+    switch (PID) {
+        case 136:
+            file_extension = ".mp2";
+            break;
+        case 174:
+            file_extension = ".264";
+            break;
+        default:
+            file_extension = ".bin";
+            break;
+    }
+
+    std::string file_name = std::string("outputs/PID_" + std::to_string(PID) + file_extension);
+    file = fopen(file_name.c_str(), "wb");
 }
 
 PES_Assembler::~PES_Assembler() {
-    if(started) {
+    if (started) {
         fwrite(&buffer[this->getHeaderLength()], this->getDataLength(), 1, file);
     }
-    delete [] buffer;
 }
 
 void PES_Assembler::PrintPESH() const {
@@ -31,8 +42,8 @@ PES_Assembler::eResult
 PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
                             const TS_PacketHeader *PacketHeader,
                             const TS_AdaptationField *AdaptationField) {
-    int CC = int(PacketHeader->getContinuityCounter()), start = 0, payload = 0;
-    if (lastContinuityCounter != -1 && (CC - lastContinuityCounter != 1 && CC - lastContinuityCounter != -15)) {
+    int start, payload;
+    if (continuityCheck(PacketHeader->getContinuityCounter())) {
         xBufferReset();
         return eResult::StreamPackedLost;
     }
@@ -45,14 +56,16 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
         }
 
         if (buffer != nullptr) xBufferReset();
-        started = true;
+
         lastContinuityCounter = PacketHeader->getContinuityCounter();
+        started = true;
 
         start = xTS::TS_HeaderLength + AdaptationField->getAdaptationFieldLength() + 1;
         payload =
                 xTS::TS_PacketLength
                 - xTS::TS_HeaderLength
                 - (AdaptationField->getAdaptationFieldLength() + 1);
+
         if (AdaptationField->getAdaptationFieldLength() == 0) {
             start--;
             payload++;
@@ -75,13 +88,13 @@ PES_Assembler::AbsorbPacket(const uint8_t *TransportStreamPacket,
                     - xTS::TS_HeaderLength
                     - (AdaptationField->getAdaptationFieldLength() + 1);
         } else {
-            start = xTS::TS_HeaderLength;
             payload = xTS::TS_PacketLength - xTS::TS_HeaderLength;
+            start = xTS::TS_HeaderLength;
         }
 
         xBufferAppend(&TransportStreamPacket[start], payload);
 
-        if (PESH.getPacketLength() + 6 == bufferSize) {
+        if (PESH.getPacketLength() + xTS::PES_HeaderLength == bufferSize) {
             started = false;
             fwrite(&buffer[this->getHeaderLength()], this->getDataLength(), 1, file);
             return eResult::AssemblingFinished;
@@ -105,13 +118,17 @@ void PES_Assembler::xBufferAppend(const uint8_t *input, int32_t size) {
         std::memcpy(buffer, input, bufferSize);
         return;
     }
-
     uint8_t *temp_buffer = new uint8_t[bufferSize];
 
     std::memcpy(temp_buffer, buffer, bufferSize - size);
     std::memcpy(&temp_buffer[bufferSize - size], input, size);
+
     delete[] buffer;
     buffer = new uint8_t[bufferSize];
     std::memcpy(buffer, temp_buffer, bufferSize);
     delete[] temp_buffer;
+}
+
+bool PES_Assembler::continuityCheck(uint8_t CC) {
+    return (lastContinuityCounter != -1 && (CC - lastContinuityCounter != 1 && CC - lastContinuityCounter != -15));
 }

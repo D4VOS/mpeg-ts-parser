@@ -45,8 +45,7 @@ public:
     static constexpr uint32_t ExtendedClockFrequency_kHz = 27000; //kHz
     static constexpr uint32_t BaseToExtendedClockMultiplier = 300;
 
-    static std::string getBitStream(const uint8_t *, int, int);
-
-    static std::string getBitStream2(const uint8_t *, int, int);
+    static std::string getBinaryRepresentation(const uint8_t *, int, int);
+    static std::string getBinaryRepresentation2(const uint8_t *input, int start, int count);
 };
 

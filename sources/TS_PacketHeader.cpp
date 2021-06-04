@@ -2,7 +2,7 @@
 #include "../headers/TS_TransportStream.h"
 
 void TS_PacketHeader::Parse(const uint8_t *input) {
-    std::stringstream ss(xTS::getBitStream(input, 0, xTS::TS_HeaderLength));    //wyciaganie bitstream naglowka
+    std::stringstream ss(xTS::getBinaryRepresentation(input, 0, xTS::TS_HeaderLength));    //wyciaganie bitstream naglowka
 
     ss >> sync_byte;
     ss >> transport_error_indicator;
@@ -39,16 +39,11 @@ void TS_PacketHeader::Print() const {
 
 uint8_t TS_PacketHeader::getSyncByte() const { return sync_byte.to_ulong(); }
 
-uint8_t TS_PacketHeader::getTransportErrorIndicator() const { return transport_error_indicator.to_ulong(); }
 
 uint8_t TS_PacketHeader::getPayloadUnitStartIndicator() const { return payload_unit_start_indicator.to_ulong(); }
 
-uint8_t TS_PacketHeader::getTransportPriority() const { return transport_priority.to_ulong(); }
 
 uint16_t TS_PacketHeader::getPID() const { return PID.to_ulong(); }
 
-uint8_t TS_PacketHeader::getTransportScramblingControl() const { return transport_scrambling_control.to_ulong(); }
-
-uint8_t TS_PacketHeader::getAdaptationFieldControl() const { return adaptation_field_control.to_ulong(); }
 
 uint8_t TS_PacketHeader::getContinuityCounter() const { return continuity_counter.to_ulong(); }

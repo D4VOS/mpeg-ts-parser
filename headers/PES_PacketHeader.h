@@ -17,11 +17,9 @@ public:
     };
 
 protected:
-    //PES packet header
     std::bitset<24> packet_start_code_prefix;
     std::bitset<8> stream_id;
     std::bitset<16> PES_packet_length;
-    //PTS & DTS parsing
     std::bitset<2> PES_scrambling_control;
     std::bitset<1> PES_priority;
     std::bitset<1> data_alignment_indicator;
@@ -42,7 +40,6 @@ protected:
     bool is_PTS;
     bool is_DTS;
 
-    uint8_t PESH_DataLength;
     uint8_t headerLength;
 public:
     void Reset();
@@ -53,13 +50,10 @@ public:
 
 public:
 //PES packet header
-    uint32_t getPacketStartCodePrefix() const { return packet_start_code_prefix.to_ulong(); }
 
     uint8_t getStreamId() const { return stream_id.to_ulong(); }
 
     uint16_t getPacketLength() const { return PES_packet_length.to_ulong(); }
-
-    uint8_t getHeaderLen() const { return headerLength; }
 
     uint8_t getHeaderDataLength() const { return 3 + PES_header_data_length.to_ulong(); }
 

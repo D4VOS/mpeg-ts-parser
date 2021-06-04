@@ -3,7 +3,7 @@
 
 void PES_PacketHeader::Parse(const uint8_t *input) {
 
-    std::stringstream ss(xTS::getBitStream(input, 0, xTS::PES_HeaderLength));
+    std::stringstream ss(xTS::getBinaryRepresentation(input, 0, xTS::PES_HeaderLength));
 
     ss >> packet_start_code_prefix;
     ss >> stream_id;
@@ -21,7 +21,7 @@ void PES_PacketHeader::Parse(const uint8_t *input) {
         ID != eStreamId_DSMCC_stream &&
         ID != eStreamId_ITUT_H222_1_type_E) {
         this->wipe(&ss);
-        ss << xTS::getBitStream(input, xTS::PES_HeaderLength, 3); // grab flags
+        ss << xTS::getBinaryRepresentation(input, xTS::PES_HeaderLength, 3); // grab flags
 
         ss.ignore(2);   //'10'
         ss >> PES_scrambling_control;
@@ -39,7 +39,7 @@ void PES_PacketHeader::Parse(const uint8_t *input) {
         ss >> PES_header_data_length;
         //std::cout << "|||" << PES_header_data_length.to_ulong() << "|||";
         this->wipe(&ss);
-        ss << xTS::getBitStream(input, xTS::PES_HeaderLength + 3, PES_header_data_length.to_ulong()); // grab flags
+        ss << xTS::getBinaryRepresentation(input, xTS::PES_HeaderLength + 3, PES_header_data_length.to_ulong()); // grab flags
         headerLength += 3 + PES_header_data_length.to_ulong();
         if (PTS_DTS_flags.to_ulong() == 2) {    //'10'
             ss.ignore(4);

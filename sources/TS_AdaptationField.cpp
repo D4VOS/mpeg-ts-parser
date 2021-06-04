@@ -46,7 +46,7 @@ void TS_AdaptationField::Parse(const uint8_t *input) {
     //this->Reset();
     adaptation_field_length = input[4];
 
-    std::stringstream ss(xTS::getBitStream(input, 5, adaptation_field_length.to_ulong()));
+    std::stringstream ss(xTS::getBinaryRepresentation(input, 5, adaptation_field_length.to_ulong()));
     int used_bytes = 1;
 
     if (adaptation_field_length.to_ulong() > 0) {

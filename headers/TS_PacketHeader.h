@@ -35,27 +35,15 @@ public: ///Setters and print
 public: ///Getters
     uint8_t getSyncByte() const;
 
-    uint8_t getTransportErrorIndicator() const;
-
     uint8_t getPayloadUnitStartIndicator() const;
 
-    uint8_t getTransportPriority() const;
-
     uint16_t getPID() const;
-
-    uint8_t getTransportScramblingControl() const;
-
-    uint8_t getAdaptationFieldControl() const;
 
     uint8_t getContinuityCounter() const;
 
 public:
     bool hasAdaptationField() const {
         return (adaptation_field_control.to_ulong() == 2 || adaptation_field_control.to_ulong() == 3);
-    }
-
-    bool hasPayload() const {
-        return (adaptation_field_control.to_ulong() == 1 || adaptation_field_control.to_ulong() == 3);
     }
 };
 

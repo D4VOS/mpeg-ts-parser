@@ -11,12 +11,15 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <cstring>
 #include <bitset>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
 #include <vector>
 #include <streambuf>
+#include <unordered_map>
+#include <cassert>
 
 class buffer_restore {
     std::ostream &os;
